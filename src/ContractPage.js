@@ -7,17 +7,22 @@ import './styles.css';
 
 const ContractPage = () => {
   const location = useLocation();
-  const { documentHtml, mobileView } = location.state || {};
+  const { documentHtml } = location.state || {};
 
   const [modalOpen, setModalOpen] = useState(false);
   const [signatureSaved, setSignatureSaved] = useState(false);
-  const [htmlContent, setHtmlContent] = useState(documentHtml); 
+  const [htmlContent, setHtmlContent] = useState(documentHtml);
+  const [mobileView, setMobileView] = useState(false);
   const sigCanvas = useRef(null);
 
   useEffect(() => {
     setHtmlContent(documentHtml);
   }, [documentHtml]);
-
+  
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+  
   const handleOpenSignatureModal = () => {
     setModalOpen(true);
   };
@@ -50,12 +55,28 @@ const ContractPage = () => {
     html2pdf().from(document.getElementById('document-preview')).set(opt).save();
   };
 
+  const handleCheckboxChange = (e) => {
+    setMobileView(e.target.checked);
+  };
+
+  const handleReset = () => {
+    window.location.reload();
+  };
+
   return (
-    <div className={`contract-page container ${mobileView ? 'mobile-view' : ''}`}>
+    <div className={`contract-page container ${mobileView ? 'mobile-view' : ''}`} style={{ width: mobileView ? '800px' : '100%' }}>
       <div id="document-preview" className="document-preview" dangerouslySetInnerHTML={{ __html: htmlContent }} />
       <div className="mt-3">
         <button className="btn btn-primary me-2" onClick={handleDownloadPDF} disabled={!signatureSaved}>Download PDF</button>
-        <button className="btn btn-secondary" onClick={handleOpenSignatureModal}>Signature</button>
+        {!signatureSaved ? (
+          <button className="btn btn-secondary me-2" onClick={handleOpenSignatureModal}>Sign</button>
+        ) : (
+          <button className="btn btn-warning me-2" onClick={handleReset}>Reset</button>
+        )}
+        <label>
+          <input type="checkbox" className="form-check-input me-1" checked={mobileView} onChange={handleCheckboxChange} />
+          Page View
+        </label>
       </div>
 
       {modalOpen && (
